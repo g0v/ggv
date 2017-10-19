@@ -41,6 +41,9 @@ curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/miniku
 
 # Start minikube
 minikube start --container-runtime=docker
+
+# Open K8s dashboard
+minikube dashboard
 ```
 
 Install hyposis Backend Service
