@@ -1,3 +1,3 @@
-kubectl create -f hypothesis/postgres.yaml
-kubectl create -f hypothesis/elastic.yaml
-kubectl create -f hypothesis/rabbitmq.yaml
+kubectl create -f postgres.yaml
+kubectl create -f elastic.yaml
+kubectl create -f rabbitmq.yaml
