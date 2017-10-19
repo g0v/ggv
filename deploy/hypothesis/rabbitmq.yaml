@@ -1,0 +1,26 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: rabbitmq
+    spec:
+      containers:
+        - image: rabbitmq:3.6-management-alpine
+          imagePullPolicy: Always
+          name: rabbitmq
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 5672
+              name: rabbit-tcp
+            - containerPort: 15672
+              name: rabbit-http
+      # [START volumes]
+      # [END volumes]

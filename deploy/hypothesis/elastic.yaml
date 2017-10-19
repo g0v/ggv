@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ealstic
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        service: elastic
+    spec:
+      containers:
+        - image: nickstenning/elasticsearch-icu #Elasticsearch + ICU
+          imagePullPolicy: Always
+          name: elastic
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 9200
+              name: elastic-tcp
+      # [START volumes]
+      # [END volumes]
