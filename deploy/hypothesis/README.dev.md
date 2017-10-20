@@ -31,6 +31,9 @@ sudo add-apt-repository \
 # Install
 sudo apt-get update
 sudo apt-get install docker-ce
+
+# Setup Docker permission for current developer, and you need relogin
+sudo adduser ${whoami} docker
 ```
 
 Install [Minikube](https://github.com/kubernetes/minikube)
@@ -46,8 +49,14 @@ minikube start --container-runtime=docker
 minikube dashboard
 ```
 
-Install hyposis Backend Service
+Install hypothsis Backend Service
 ------------------
 ```
 ./deploy_service.sh
+```
+
+Build hypothsis image from github
+---------------------
+```
+./build_h_docker.sh
 ```
