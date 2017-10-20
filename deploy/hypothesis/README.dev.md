@@ -52,11 +52,46 @@ minikube dashboard
 Install hypothsis Backend Service
 ------------------
 ```
+# Install service in K8s
 ./deploy_service.sh
+
+# Initialize Database
+kubectl exec -it $(kubectl get pods | grep postgres | cut -d' ' -f1) -- su -c "psql -c 'CREATE DATABASE h;';psql -c 'CREATE DATABASE htest;'" postgres
+
+# Setup User for DB
+kubectl exec -it $(kubectl get pods | grep postgres | cut -d' ' -f1) -- su -c " \
+psql -c 'CREATE USER hserver;'; \
+psql -c \"alter user hserver with encrypted password 'hserver';\"; \
+psql -c \"grant all privileges on database h to hserver;\"; \
+psql -c \"grant all privileges on database htest to hserver;\"; \
+" postgres
 ```
 
-Build hypothsis image from github
+Install [h server](https://github.com/hypothesis/h)
 ---------------------
 ```
+# Build image from github
 ./build_h_docker.sh
+
+# Generate config file
+./build_h_env.sh
+
+# edit config file if you need
+# check [config.py](https://github.com/hypothesis/h/blob/master/h/config.py) for config detail
+vim hserver_config.yaml
+
+# Deploy h
+./deploy_hserver.sh
+
+# Initial Database
+kubectl exec -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://$(minikube ip) init
+```
+
+Access h server
+--------------------
+```
+# Get minikube service ip
+minikube ip
+
+# Open Browser and access http://ip:30080/
 ```

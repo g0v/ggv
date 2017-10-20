@@ -1,24 +1,27 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: postgres
+  name: hserver
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        service: postgres
+        service: hserver
     spec:
       containers:
-        - image: postgres:9.6-alpine
-          imagePullPolicy: Always
-          name: postgres
+        - image: ggv/hserver
+          imagePullPolicy: IfNotPresent
+          name: hserver
           resources:
             requests:
               memory: "64Mi"
               cpu: "100m"
+          envFrom:
+            - configMapRef:
+                name: hserver-config
           ports:
-            - containerPort: 5432
-              name: postgres-tcp
+            - containerPort: 5000
+              name: hserver-tcp
       # [START volumes]
       # [END volumes]
