@@ -69,6 +69,7 @@ psql -c \"grant all privileges on database htest to hserver;\"; \
 
 Install [h server](https://github.com/hypothesis/h)
 ---------------------
+* check [config.py](https://github.com/hypothesis/h/blob/master/h/config.py) for config detail
 ```
 # Build image from github
 ./build_h_docker.sh
@@ -77,7 +78,6 @@ Install [h server](https://github.com/hypothesis/h)
 ./build_h_env.sh
 
 # edit config file if you need
-# check [config.py](https://github.com/hypothesis/h/blob/master/h/config.py) for config detail
 vim hserver_config.yaml
 
 # Deploy h
