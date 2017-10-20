@@ -2,6 +2,7 @@
 client_id=$(uuidgen)
 client_secret=`python -c 'import base64; import os; print(base64.urlsafe_b64encode(os.urandom(48)))'`
 secret_key=`python -c 'import base64; import os; print(base64.urlsafe_b64encode(os.urandom(48)))'`
+ip=$(minikube ip)
 
 echo "apiVersion: v1
 kind: ConfigMap
@@ -16,4 +17,6 @@ data:
   ELASTICSEARCH_HOST: http://elastic:9200
   SECRET_KEY: $secret_key
   AUTHORITY: ggv.tw
+  WEBSOCKET_URL: ws://$ip:30080/ws
+  APP_URL: http://$ip:30080/
 " >> hserver_config.yaml

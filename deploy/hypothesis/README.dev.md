@@ -94,4 +94,36 @@ Access h server
 minikube ip
 
 # Open Browser and access http://ip:30080/
+
+# Create user for testing (USERNAME:test  PASSWORD:test)
+kubectl exec -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://$(minikube ip) user add --username test --password test --email test@test.com
+```
+
+Test h server using [Browser Extension](https://github.com/hypothesis/browser-extension)
+---------------------
+* Get service ip from previous step
+```
+# Get source code
+git clone https://github.com/hypothesis/browser-extension
+cd browser-extension
+
+# Install package
+npm install
+
+# Edit setting
+vim settings/chrome-dev.json
+
+# fix the following key
+  "apiUrl": "http://[service ip]:30080/api/",
+  "authDomain": "localhost",
+  "bouncerUrl": "http://[service ip]:30800/",
+  "serviceUrl": "http://[service ip]:30080/",
+  "websocketUrl": "ws://[service ip]:30080/ws",
+
+# Build
+make
+
+# Install Extension
+# Open Chrome > Menu > More Tools > Extensions > check "Developer Mode" > click "load unpacked extension..."
+# select the folder browser-extension/build
 ```
