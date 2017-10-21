@@ -1,4 +1,4 @@
-Environment
+Ubuntu Environment
 ===============
 Install [Kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
 -----------------
@@ -39,11 +39,18 @@ sudo adduser ${whoami} docker
 Install [Minikube](https://github.com/kubernetes/minikube)
 ------------------
 ```
-# Install
+# Install [KVM driver](https://github.com/kubernetes/minikube/blob/master/docs/drivers.md#kvm-driver)
+sudo apt install libvirt-bin qemu-kvm
+sudo usermod -a -G libvirtd $(whoami)
+newgrp libvirtd #(NOTE: For Ubuntu 17.04 change the group to `libvirt`)
+sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.10.0/docker-machine-driver-kvm-ubuntu16.04 -o /usr/local/bin/docker-machine-driver-kvm
+sudo chmod +x /usr/local/bin/docker-machine-driver-kvm
+
+# Install minikube
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 # Start minikube
-minikube start --container-runtime=docker
+minikube start --vm-driver=kvm
 
 # Open K8s dashboard
 minikube dashboard
@@ -58,7 +65,7 @@ Install hypothsis Backend Service
 # Initialize Database
 kubectl exec -it $(kubectl get pods | grep postgres | cut -d' ' -f1) -- su -c "psql -c 'CREATE DATABASE h;';psql -c 'CREATE DATABASE htest;'" postgres
 
-# Setup User for DB
+# Setup User for DB if you need it
 kubectl exec -it $(kubectl get pods | grep postgres | cut -d' ' -f1) -- su -c " \
 psql -c 'CREATE USER hserver;'; \
 psql -c \"alter user hserver with encrypted password 'hserver';\"; \
@@ -119,6 +126,7 @@ vim settings/chrome-dev.json
   "bouncerUrl": "http://[service ip]:30800/",
   "serviceUrl": "http://[service ip]:30080/",
   "websocketUrl": "ws://[service ip]:30080/ws",
+# If you wanna build plugin in production mode, you should comment out tools/settings.js:33 throw error(...)
 
 # Build
 make
@@ -126,4 +134,6 @@ make
 # Install Extension
 # Open Chrome > Menu > More Tools > Extensions > check "Developer Mode" > click "load unpacked extension..."
 # select the folder browser-extension/build
+
+# If you running the server without SSL, chrome would drop unsecure connection when you browse secure website.
 ```
