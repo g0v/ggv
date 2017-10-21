@@ -36,10 +36,10 @@ sudo apt-get install docker-ce
 sudo adduser ${whoami} docker
 ```
 
-Install [Minikube](https://github.com/kubernetes/minikube)
+Install [Minikube](https://github.com/kubernetes/minikube) with [KVM driver](https://github.com/kubernetes/minikube/blob/master/docs/drivers.md#kvm-driver)
 ------------------
 ```
-# Install [KVM driver](https://github.com/kubernetes/minikube/blob/master/docs/drivers.md#kvm-driver)
+# Install KVM driver
 sudo apt install libvirt-bin qemu-kvm
 sudo usermod -a -G libvirtd $(whoami)
 newgrp libvirtd #(NOTE: For Ubuntu 17.04 change the group to `libvirt`)
