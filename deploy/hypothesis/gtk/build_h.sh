@@ -1,11 +1,12 @@
 #!/bin/bash
 
 if [ $# -eq 0  ]; then
-    echo "Usage: \"./build_h.sh [Project ID]:[INSTANCE_CONNECTION_NAME]\"";
+    echo "Usage: \"./build_h.sh [DB_CONNECTION_NAME(ProjectID:Region:InstanceName)]\"";
     exit
 fi
 
 db_address=$1
+image_url=$(gcloud container builds list | grep hserver | awk '{print $5}')
 
 echo "apiVersion: extensions/v1beta1
 kind: Deployment
@@ -19,32 +20,41 @@ spec:
         service: hserver
     spec:
       containers:
-        - image: ggv/hserver
+        - image: $image_url
           imagePullPolicy: Always
           name: hserver
           resources:
             requests:
               memory: \"64Mi\"
-              cpu: \"100m\"
+              cpu: \"10m\"
           envFrom:
             - configMapRef:
                 name: hserver-config
           ports:
             - containerPort: 5000
               name: hserver-tcp
-        - image: b.gcr.io/cloudsql-docker/gce-proxy:1.05
+        - image: b.gcr.io/cloudsql-docker/gce-proxy:1.11
           name: cloudsql-proxy
           command: [\"/cloud_sql_proxy\", \"--dir=/cloudsql\",
-                    \"-instances=$1=tcp:5432\",
+                    \"-instances=$db_address=tcp:5432\",
                     \"-credential_file=/secrets/cloudsql/credentials.json\"]
           volumeMounts:
-            - name: cloudsql-oauth-credentials
+            - name: cloudsql-instance-credentials
               mountPath: /secrets/cloudsql
               readOnly: true
             - name: ssl-certs
               mountPath: /etc/ssl/certs
             - name: cloudsql
               mountPath: /cloudsql
+      volumes:
+        - name: cloudsql-instance-credentials
+          secret:
+            secretName: cloudsql-instance-credentials
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs
+        - name: cloudsql
+          emptyDir:
 " >> hserver.yaml
 
 client_id=$(uuidgen)

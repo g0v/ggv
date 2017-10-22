@@ -1,4 +1,4 @@
-Google Cloud Container Engine(GTK) Environment
+Google Cloud Container Engine(GKE) Environment
 ===============
 Install [Google Cloud SDK](https://cloud.google.com/sdk/gcloud/)
 ----------------
@@ -24,7 +24,7 @@ curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s htt
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 
-# Add GTK Context to Kubectl
+# Add GKE Context to Kubectl
 gcloud container clusters get-credentials [Cluster Name] --zone asia-east1-a --project [ProjectID]
 
 # Check current context
@@ -33,7 +33,7 @@ kubectl config get-contexts
 # Switch context if you need it
 kubectl config set-context [Context Name]
 
-# Access GTK dashboard
+# Access GKE dashboard
 kubectl proxy
 
 # Open browser and navigating to the following location
@@ -61,9 +61,9 @@ gcloud auth application-default login
 
 Install hypothsis Backend Service
 ------------------
-* deploy_service.sh deploy elastic and rabbitmq in GTK
+* deploy_service.sh deploy elastic and rabbitmq in GKE
 * postgresql is a standalone cloudsql
-* Create service account for GTK
+* Create service account for GKE
   1. Go to [Service Accounts](https://console.cloud.google.com/projectselector/iam-admin/serviceaccounts)
   2. Select the project
   3. Click "Create Service Account", enter a "account name", check "Furnish a new private key" and select "JSON"
@@ -87,7 +87,7 @@ alter user hserver with encrypted password 'hserver';
 grant all privileges on database h to hserver;
 grant all privileges on database htest to hserver;
 
-# Import Private Key to GTK
+# Import Private Key to GKE
 kubectl create secret generic cloudsql-instance-credentials \
                        --from-file=credentials.json=[PROXY_KEY_FILE_PATH]
 
@@ -99,17 +99,19 @@ kubectl create secret generic cloudsql-db-credentials \
 Install [h server](https://github.com/hypothesis/h)
 ---------------------
 * check [config.py](https://github.com/hypothesis/h/blob/master/h/config.py) for config detail
-* Create a [Build Trigger](https://console.cloud.google.com/gcr/triggers) for h
-  1. You need to get Source Repository Administrator role for this project, [check this](https://console.cloud.google.com/iam-admin/iam/project)
-  2. Select GitHub as source
-  3. set the image name as ggv/hserver
+* Enable [Container Builder API])(https://console.cloud.google.com/flows/enableapi?apiid=cloudbuild.googleapis.com)
 ```
-# Create a [Build Trigger](https://console.cloud.google.com/gcr/triggers) for h
+# Build h server Image using container builder
+gcloud container builds submit --config hserver_builder.yaml --no-source
 
-# Generate deploy file
-./build_h.sh [Project ID]:[INSTANCE_CONNECTION_NAME]
+# Or you can push your image into container registry
+docker tag [IMAGE] [HOSTNAME]/[PROJECT-ID]/[IMAGE][:TAG]
+gcloud docker -- push [HOSTNAME]/[PROJECT-ID]/[IMAGE][:TAG]
 
-# edit config file if you need
+# Generate deploy file, the DB_CONNECTION_NAME includes Project ID, Region, Instance Name
+./build_h.sh [DB_CONNECTION_NAME]
+
+# edit config file, especially the passowrd of postgres
 vim hserver.yaml
 vim hserver_config.yaml
 
@@ -117,20 +119,36 @@ vim hserver_config.yaml
 ./deploy_hserver.sh
 
 # Initial Database
-kubectl exec -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://$(minikube ip) init
+kubectl exec -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://ggv.tw init
 ```
 
 Access h server
 --------------------
+* Activate service port in [Instance groups](https://console.cloud.google.com/compute/instanceGroups/list)
+  1. Edit the GKE Group
+  2. Add port http/30080
+  3. No health check
+* Create [Firwall Rule]
+  1. click "Create a firewall rule"
+  2. Name(allow-hserver-healthcheck), Targets(Specified target tags), Target tags(GKT Cluster subnetwork), Source Filter(IP ranges), Source IP ranges(0.0.0.0/0), Protocols and ports(tcp:30080)
+* Create a [Load Balancer](https://console.cloud.google.com/net-services/loadbalancing/loadBalancers/list) for GKE cluster
+  1. click "Create Load Balancer"
+  2. select "HTTP Load Balancer"
+  3. Backend Service -> Create a backend service -> name(hserver-http), protocol(http), Named port(http), Instance Group(the gtk group)
+  4. Health Check -> Create a new health check -> port: 30080, timeout: 5s, check interval: 5s, unhealthy threshold: 2 attempts
+  4. Frontend Configuration -> Create a new IPv4/IPv6 for this service
+  5. click "Create"
 ```
-# Get minikube service ip
-minikube ip
 
-# Open Browser and access http://ip:30080/
+# Open Browser and access http://ip/
 
 # Create user for testing (USERNAME:test  PASSWORD:test)
-kubectl exec -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://$(minikube ip) user add --username test --password test --email test@test.com
+kubectl exec -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://ggv.tw user add --username test --password test --email test@test.com
 ```
+
+SSL Certificate
+--------------------
+
 
 Test h server using [Browser Extension](https://github.com/hypothesis/browser-extension)
 ---------------------

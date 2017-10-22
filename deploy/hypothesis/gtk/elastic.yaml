@@ -16,7 +16,7 @@ spec:
           resources:
             requests:
               memory: "64Mi"
-              cpu: "100m"
+              cpu: "10m"
           ports:
             - containerPort: 9200
               name: elastic-tcp

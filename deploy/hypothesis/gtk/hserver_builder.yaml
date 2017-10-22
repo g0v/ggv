@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'https://github.com/hypothesis/h.git', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'asia.gcr.io/$PROJECT_ID/hserver', '-t', 'asia.gcr.io/$PROJECT_ID/hserver:latest', '-f', './Dockerfile', '.']
+images:
+- 'asia.gcr.io/$PROJECT_ID/hserver'
