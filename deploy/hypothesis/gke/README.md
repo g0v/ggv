@@ -99,7 +99,7 @@ kubectl create secret generic cloudsql-db-credentials \
 Install [h server](https://github.com/hypothesis/h)
 ---------------------
 * check [config.py](https://github.com/hypothesis/h/blob/master/h/config.py) for config detail
-* Enable [Container Builder API])(https://console.cloud.google.com/flows/enableapi?apiid=cloudbuild.googleapis.com)
+* Enable [Container Builder API](https://console.cloud.google.com/flows/enableapi?apiid=cloudbuild.googleapis.com)
 ```
 # Build h server Image using container builder
 gcloud container builds submit --config hserver_builder.yaml --no-source
