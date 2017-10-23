@@ -119,7 +119,7 @@ vim hserver_config.yaml
 ./deploy_hserver.sh
 
 # Initial Database
-kubectl exec -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://ggv.tw init
+kubectl exec -c hserver -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://ggv.tw init
 ```
 
 Access h server
@@ -143,12 +143,24 @@ Access h server
 # Open Browser and access http://ip/
 
 # Create user for testing (USERNAME:test  PASSWORD:test)
-kubectl exec -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://ggv.tw user add --username test --password test --email test@test.com
+kubectl exec -c hserver -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://ggv.tw user add --username test --password test --email test@test.com
 ```
 
 SSL Certificate
 --------------------
+```
+brew install certbot
+sudo certbot certonly --manual -d [DOMAIN NAME]
 
+# Create Bucket for LoadBalancer for verify
+# Load balancering > Edit the load balancer Frontend configuration > Backend configuration > Create backend bucket
+# Load balancering > Host and path rules > Add the following rules
+#	[Domain]   /.well-known/acme-challenge/*     [Your Bucket]
+#       [Domain]   /*                                [Your Backend Server]
+
+# Import Certification
+# Load balancering > Edit the load balancer Frontend configuration > Add protocol > https > import cert > done
+```
 
 Test h server using [Browser Extension](https://github.com/hypothesis/browser-extension)
 ---------------------
@@ -165,11 +177,11 @@ npm install
 vim settings/chrome-dev.json
 
 # fix the following key
-  "apiUrl": "http://[service ip]:30080/api/",
-  "authDomain": "localhost",
-  "bouncerUrl": "http://[service ip]:30800/",
-  "serviceUrl": "http://[service ip]:30080/",
-  "websocketUrl": "ws://[service ip]:30080/ws",
+  "apiUrl": "https://[DOMAIN]/api/",
+  "authDomain": "[DOMAIN]",
+  "bouncerUrl": "https://[DOMAIN]/",
+  "serviceUrl": "https://[DOMAIN]/",
+  "websocketUrl": "wss://[DOMAIN]/ws",
 # If you wanna build plugin in production mode, you should comment out tools/settings.js:33 throw error(...)
 
 # Build
