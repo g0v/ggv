@@ -72,6 +72,7 @@ spec:
 client_id=$(uuidgen)
 client_secret=`python -c 'import base64; import os; print(base64.urlsafe_b64encode(os.urandom(48)))'`
 secret_key=`python -c 'import base64; import os; print(base64.urlsafe_b64encode(os.urandom(48)))'`
+client_oauth_id=$(uuidgen)
 ip=127.0.0.1
 
 echo "apiVersion: v1
@@ -92,6 +93,9 @@ data:
   MAIL_DEFAULT_SENDER: [USERNAME]@gmail.com
   MAIL_HOST: 127.0.0.1
   MAIL_PORT: "25"
+  # CLIENT_URL
+  CLIENT_OAUTH_ID: $client_oauth_id
+  # CLIENT_RPC_ALLOWED_ORIGINS: http://localhost:5000
 " >> hserver_config.yaml
 
 echo "apiVersion: v1
