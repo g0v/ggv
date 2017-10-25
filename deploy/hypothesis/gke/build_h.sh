@@ -46,6 +46,18 @@ spec:
               mountPath: /etc/ssl/certs
             - name: cloudsql
               mountPath: /cloudsql
+        - image: namshi/smtp
+          name: smtp
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "10m"
+          ports:
+            - containerPort: 25
+              name: smtp-tcp
+          envFrom:
+            - configMapRef:
+                name: smtp-config
       volumes:
         - name: cloudsql-instance-credentials
           secret:
@@ -77,4 +89,17 @@ data:
   AUTHORITY: ggv.tw
   WEBSOCKET_URL: ws://$ip:30080/ws
   APP_URL: http://$ip:30080/
+  MAIL_DEFAULT_SENDER: [USERNAME]@gmail.com
+  MAIL_HOST: 127.0.0.1
+  MAIL_PORT: "25"
 " >> hserver_config.yaml
+
+echo "apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smtp-config
+  namespace: default
+data:
+  GMAIL_USER: [USERNAME]@gmail.com
+  GMAIL_PASSWORD: [PASSWORD]
+" >> smtp_config.yaml

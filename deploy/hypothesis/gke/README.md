@@ -111,9 +111,12 @@ gcloud docker -- push [HOSTNAME]/[PROJECT-ID]/[IMAGE][:TAG]
 # Generate deploy file, the DB_CONNECTION_NAME includes Project ID, Region, Instance Name
 ./build_h.sh [DB_CONNECTION_NAME]
 
-# edit config file, especially the passowrd of postgres
+# edit config file, especially the passowrd of postgres and mail sender
 vim hserver.yaml
 vim hserver_config.yaml
+
+# edit smtp config, default using gmail as backend, check out the document from [namshi/smtp](https://github.com/namshi/docker-smtp) for config detail
+vim smtp_config.yaml
 
 # Deploy h
 ./deploy_hserver.sh
