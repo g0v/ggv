@@ -196,3 +196,64 @@ make
 
 # If you running the server without SSL, chrome would drop unsecure connection when you browse secure website.
 ```
+
+Install [Hypothesis Client](https://github.com/hypothesis/client)
+-----------------------
+* the client is build and upload to google cloud storage
+```
+# Get Source Code
+git clone https://github.com/hypothesis/client.git
+cd client
+
+# Configurateion
+vim gulpfile.js
+# Change Line 273 to your domain
+272:  if (process.env.NODE_ENV === 'production') {
+273:    defaultAssetRoot = `https://cdn.hypothes.is/hypothesis/${version}/`;
+274:  } else {
+
+# Env
+export NODE_ENV=production
+export SIDEBAR_APP_URL=https://kuansim.org/app.html
+
+# Build
+make clean
+make
+
+# Upload to Google Cloud Storage: hclient
+gsutil cp -r -a public-read build/* gs://hclient/client/build/
+gsutil cp -r -a public-read build/boot.js  gs://hclient/client/
+gsutil web set -m boot.js -e client/build/boot.js gs://hclient
+
+# Fix CORS problem
+gsutil cors set storage_cors.json gs://hclient
+
+# Setup load balancer to bucket
+# Hosts: Domain
+# Path: /client/*, /client 
+# Backend: hclient
+```
+
+Install [Hypothesis Via Server](https://github.com/hypothesis/via)
+-----------------------
+```
+# Get source code
+git clone https://github.com/hypothesis/via
+cd via
+
+# Configuration
+vim config.yaml
+# Add your domain under no_rewrite_prefixes
+
+# Build Via image
+build_via.sh [Your Project ID]
+
+# Edit viaserver.yaml
+vim viaserver.yaml
+# Set H_EMBED_URL to your client url https://[Your Domain]/client/boot.js
+# Set CORS_ALLOW_ORIGINS to your h server domain 
+
+# Deploy
+kubectl create -f viaserver.yaml
+kubectl create -f viaserver_service.yaml
+```
