@@ -147,6 +147,37 @@ Access h server
 
 # Create user for testing (USERNAME:test  PASSWORD:test)
 kubectl exec -c hserver -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://ggv.tw user add --username test --password test --email test@test.com
+
+# Create user for admin (USERNAME:admin_user PASSWORD:admin)
+kubectl exec -c hserver -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis --app-url=http://ggv.tw user add --username admin_user --password admin --email admin@test.com
+kubectl exec -c hserver -it $(kubectl get pods | grep hserver | cut -d' ' -f1) -- hypothesis user admin admin_user
+```
+
+Setup Oauth for h server
+--------------------
+* Apple a oauth client for app.html
+  1. open http://ip/ and login as admin_user
+  2. open http://ip/admin/oauthclients and add a new oauth client
+     * Name: app
+     * Authority: ggv.tw
+     * Grant type: authorization_code
+     * Trusted: checked
+     * Redirect URL: http://ip
+  3. click save and copy the Client ID
+* Edit Server config
+```
+# Edit config
+vim hserver_config.yaml
+
+# Add oauth-related env var
+CLIENT_URL: http://ip/client
+CLIENT_OAUTH_ID: [Client ID]
+CLIENT_RPC_ALLOWED_ORIGINS: http://ip
+
+# Apple new config
+kubectl replace -f hserver_config.yaml
+
+# Delete current hserver pods and generate new one
 ```
 
 SSL Certificate
